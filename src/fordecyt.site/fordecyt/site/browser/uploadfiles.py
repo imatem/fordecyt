@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from DateTime import DateTime
-# from openpyxl import load_workbook
 from plone import api
 from z3c.form import button
 from z3c.form import form
@@ -11,6 +9,7 @@ import os
 
 from plone.i18n.normalizer import idnormalizer as idn
 from plone.namedfile.file import NamedBlobFile
+from plone.namedfile.file import NamedBlobImage
 
 logger = logging.getLogger('Plone')
 
@@ -26,42 +25,53 @@ class UploadFoldersForm(form.Form):
         client_path = os.path.abspath(os.curdir)
         directory_path = client_path + '/Extensions/'
         portal = api.portal.get()
-        container_folder = portal.unrestrictedTraverse('documents/')
+        container_folder = portal
         print container_folder
         for root, dirs, files in os.walk(directory_path):
 
             for directory in dirs:
                 newlist = [idn.normalize(item) for item in root.split('/')[6:]]
-                new_path_container = 'documents/' + '/'.join(filter(None, newlist))
+                new_path_container = '/'.join(filter(None, newlist))
                 newcontainer = portal.unrestrictedTraverse(new_path_container)
                 api.content.create(type='Folder', id=idn.normalize(directory), title=directory, container=newcontainer)
 
             for file in files:
-                if file.endswith(".pdf"):
-                    # print(os.path.join(root, file))
-
-                    path_list = [idn.normalize(item) for item in root.split('/')[6:]]
-                    new_path_container_file = 'documents/' + '/'.join(filter(None, path_list))
-                    newcontainer = portal.unrestrictedTraverse(new_path_container_file)
-                    # namefile = file.split('.')[0]
-                    uploadfile = api.content.create(type='File', id=idn.normalize(file), title=file, container=newcontainer)
-                    FILE = os.path.join(root, file)
+                path_list = [idn.normalize(item) for item in root.split('/')[6:]]
+                new_path_container_file = '/'.join(filter(None, path_list))
+                newcontainer = portal.unrestrictedTraverse(new_path_container_file)
+                # pdf files
+                if file.lower().endswith(".pdf"):
+                    uploadfile = api.content.create(
+                        type='File',
+                        id=idn.normalize(file),
+                        title=file,
+                        container=newcontainer)
+                    filename = os.path.join(root, file)
                     try:
-                        fileRawData = open(FILE)
+                        fileRawData = open(filename)
                     except Exception:
-                        print 'File not found: {}'.format(FILE)
+                        print 'File not found: {}'.format(filename)
                         continue
 
-
-                    uploadfile.file = NamedBlobFile(data=fileRawData.read(), contentType='application/pdf', filename=unicode(uploadfile.id, 'utf-8'),)
-
-                    # uploadfile.setFile(fileRawData)
-
-
-                    # NamedBlobFile(data=fileRawData, filename=namefile)
+                    uploadfile.file = NamedBlobFile(
+                        data=fileRawData.read(),
+                        contentType='application/pdf',
+                        filename=unicode(file, 'utf-8'))
 
                     uploadfile.reindexObject()
                     fileRawData.close()
+                # images
+                if file.lower().endswith(('.jpg', '.jpeg', '.gif', '.png')):
+                    uploadfile = api.content.create(
+                        type='Image',
+                        id=idn.normalize(file),
+                        title=file,
+                        container=newcontainer)
+                    filename = os.path.join(root, file)
+                    uploadfile.image = NamedBlobImage(
+                        data=open(filename, 'r').read(),
+                        filename=unicode(file, 'utf-8'))
+                    uploadfile.reindexObject()
 
         logger.info('done.')
 
