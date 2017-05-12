@@ -43,8 +43,8 @@ class UploadFoldersForm(form.Form):
                     path_list = [idn.normalize(item) for item in root.split('/')[6:]]
                     new_path_container_file = 'documents/' + '/'.join(filter(None, path_list))
                     newcontainer = portal.unrestrictedTraverse(new_path_container_file)
-                    namefile = file.split('.')[0]
-                    uploadfile = api.content.create(type='File', id=idn.normalize(namefile), title=namefile, container=newcontainer)
+                    # namefile = file.split('.')[0]
+                    uploadfile = api.content.create(type='File', id=idn.normalize(file), title=file, container=newcontainer)
                     FILE = os.path.join(root, file)
                     try:
                         fileRawData = open(FILE)
@@ -53,7 +53,7 @@ class UploadFoldersForm(form.Form):
                         continue
 
 
-                    uploadfile.file = NamedBlobFile(data=fileRawData.read(), contentType='application/pdf', filename=unicode(uploadfile.id + '-blob', 'utf-8'),)
+                    uploadfile.file = NamedBlobFile(data=fileRawData.read(), contentType='application/pdf', filename=unicode(uploadfile.id, 'utf-8'),)
 
                     # uploadfile.setFile(fileRawData)
 
