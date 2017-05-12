@@ -10,6 +10,7 @@ import logging
 import os
 
 from plone.i18n.normalizer import idnormalizer as idn
+from plone.namedfile.file import NamedBlobFile
 
 logger = logging.getLogger('Plone')
 
@@ -33,11 +34,34 @@ class UploadFoldersForm(form.Form):
                 newlist = [idn.normalize(item) for item in root.split('/')[6:]]
                 new_path_container = 'documents/' + '/'.join(filter(None, newlist))
                 newcontainer = portal.unrestrictedTraverse(new_path_container)
-                api.content.create(type='Folder', title=directory, container=newcontainer)
+                api.content.create(type='Folder', id=idn.normalize(directory), title=directory, container=newcontainer)
 
-            # for file in files:
-            #     if file.endswith(".pdf"):
-            #         print(os.path.join(root, file))
+            for file in files:
+                if file.endswith(".pdf"):
+                    # print(os.path.join(root, file))
+
+                    path_list = [idn.normalize(item) for item in root.split('/')[6:]]
+                    new_path_container_file = 'documents/' + '/'.join(filter(None, path_list))
+                    newcontainer = portal.unrestrictedTraverse(new_path_container_file)
+                    namefile = file.split('.')[0]
+                    uploadfile = api.content.create(type='File', id=idn.normalize(namefile), title=namefile, container=newcontainer)
+                    FILE = os.path.join(root, file)
+                    try:
+                        fileRawData = open(FILE)
+                    except Exception:
+                        print 'File not found: {}'.format(FILE)
+                        continue
+
+
+                    uploadfile.file = NamedBlobFile(data=fileRawData, contentType='application/pdf', filename=unicode(uploadfile.id, 'utf-8'),)
+
+                    # uploadfile.setFile(fileRawData)
+
+
+                    # NamedBlobFile(data=fileRawData, filename=namefile)
+
+                    uploadfile.reindexObject()
+                    fileRawData.close()
 
         logger.info('done.')
 
