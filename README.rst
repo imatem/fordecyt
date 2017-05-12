@@ -12,8 +12,8 @@ Quickstart
 
 .. code-block:: bash
 
-    $ git clone https://github.com/imatem/plone-buildout SOME_PROJECT
-    $ cd SOME_PROJECT
+    $ git clone https://github.com/imatem/fordecyt
+    $ cd fordecyt
 
 Add a file that contains a passwort. Do **not** use ``admin`` as a password in production!
 
