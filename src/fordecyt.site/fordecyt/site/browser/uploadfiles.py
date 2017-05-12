@@ -53,7 +53,7 @@ class UploadFoldersForm(form.Form):
                         continue
 
 
-                    uploadfile.file = NamedBlobFile(data=fileRawData, contentType='application/pdf', filename=unicode(uploadfile.id, 'utf-8'),)
+                    uploadfile.file = NamedBlobFile(data=fileRawData.read(), contentType='application/pdf', filename=unicode(uploadfile.id + '-blob', 'utf-8'),)
 
                     # uploadfile.setFile(fileRawData)
 
