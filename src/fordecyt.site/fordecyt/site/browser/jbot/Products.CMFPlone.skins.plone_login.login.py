@@ -1,5 +1,9 @@
 request = context.REQUEST
 
+# set ZMI properties layout to login
+if not context.portal_membership.isAnonymousUser():
+    return context.restrictedTraverse('listing_view')()
+
 # Handle external login requests from other portals where the user is already
 # logged in in this portal
 next = request.get('next', None)
