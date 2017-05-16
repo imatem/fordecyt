@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'setuptools',
         'plone.app.theming',
+        'z3c.jbot',
     ],
     extras_require={
         'test': [
