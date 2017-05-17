@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from plone import api
+from plone.i18n.normalizer import idnormalizer as idn
+from plone.namedfile.file import NamedBlobFile
+from plone.namedfile.file import NamedBlobImage
+from Products.CMFPlone.utils import safe_unicode
 from z3c.form import button
 from z3c.form import form
 
 import logging
 import os
 
-from plone.i18n.normalizer import idnormalizer as idn
-from plone.namedfile.file import NamedBlobFile
-from plone.namedfile.file import NamedBlobImage
 
 logger = logging.getLogger('Plone')
 
@@ -30,20 +31,20 @@ class UploadFoldersForm(form.Form):
         for root, dirs, files in os.walk(directory_path):
 
             for directory in dirs:
-                newlist = [idn.normalize(item) for item in root.split('/')[6:]]
+                newlist = [idn.normalize(safe_unicode(item)) for item in root.split('/')[6:]]
                 new_path_container = '/'.join(filter(None, newlist))
                 newcontainer = portal.unrestrictedTraverse(new_path_container)
-                api.content.create(type='Folder', id=idn.normalize(directory), title=directory, container=newcontainer)
+                api.content.create(type='Folder', id=idn.normalize(safe_unicode(directory)), title=directory, container=newcontainer)
 
             for file in files:
-                path_list = [idn.normalize(item) for item in root.split('/')[6:]]
+                path_list = [idn.normalize(safe_unicode(item)) for item in root.split('/')[6:]]
                 new_path_container_file = '/'.join(filter(None, path_list))
                 newcontainer = portal.unrestrictedTraverse(new_path_container_file)
                 # pdf files
                 if file.lower().endswith(".pdf"):
                     uploadfile = api.content.create(
                         type='File',
-                        id=idn.normalize(file),
+                        id=idn.normalize(safe_unicode(file), max_length=90),
                         title=file,
                         container=newcontainer)
                     filename = os.path.join(root, file)
@@ -64,7 +65,7 @@ class UploadFoldersForm(form.Form):
                 elif file.lower().endswith(('.jpg', '.jpeg', '.gif', '.png')):
                     uploadfile = api.content.create(
                         type='Image',
-                        id=idn.normalize(file),
+                        id=idn.normalize(safe_unicode(file)),
                         title=file,
                         container=newcontainer)
                     filename = os.path.join(root, file)
